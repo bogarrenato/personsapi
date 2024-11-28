@@ -21,10 +21,7 @@ public class AppUser
     //EF recognises this as a relation because of naming conventions - going to create a table for photos
     public List<Photo> Photos { get; set; } = [];
 
-    //Has to has the Get in the name
-    // public int GetAge()
-    // {
-    //     return DateOfBirth.CalculateAge();
-    // }
+    public List<UserLike> LikedByUsers { get; set; } = [];
+    public List<UserLike> LikedUsers { get; set; } = [];
 
 }

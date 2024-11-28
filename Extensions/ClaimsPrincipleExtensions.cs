@@ -10,15 +10,14 @@ public static class ClaimsPrincipleExtensions
 {
     public static string GetUsername(this ClaimsPrincipal user)
     {
-        var actualUser = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (string.IsNullOrEmpty(actualUser))
-        {
-            throw new Exception("User not found");
-        }
-
-        return actualUser;
+        return user.FindFirst(ClaimTypes.Name)?.Value ?? throw new Exception("Cannot get username from token");
     }
 
+
+    public static int GetUserId(this ClaimsPrincipal user)
+    {
+        var userId = int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("Cannot get username from token"));
+        return userId;
+    }
 
 }

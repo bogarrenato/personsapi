@@ -19,10 +19,11 @@ public class TokenService(IConfiguration config) : ITokenService
         }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey));
-
+    Console.WriteLine(user.UserName);
 
         var claims = new List<Claim>{
-            new Claim(ClaimTypes.NameIdentifier, user.UserName),
+         new Claim(JwtRegisteredClaimNames.NameId, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Name, user.UserName),
         };
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
@@ -32,7 +33,7 @@ public class TokenService(IConfiguration config) : ITokenService
         {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddDays(7),
-            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature)
+            SigningCredentials = creds
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();

@@ -1,10 +1,12 @@
 ﻿
 
 using System.Security.Claims;
+using System.Text.Json;
 using API.Data;
 using API.DTOs;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -18,27 +20,20 @@ namespace API.Controllers;
 public class UsersController(IUserRepository userRepository, IMapper mapper, IPhotoService photoService) : BaseApiController
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
+    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams)
     {
-        var users = await userRepository.GetMembersAsync();
 
+        Console.WriteLine("aaa");
+        Console.WriteLine(JsonSerializer.Serialize(User.GetUsername()));
+        Console.WriteLine("aaa");
+        userParams.CurrentUsername = User.GetUsername();
+        var users = await userRepository.GetMembersAsync(userParams);
+
+        Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
 
         return Ok(users);
     }
 
-
-    // [HttpGet("{id:int}")]
-    // public async Task<ActionResult<MemberDto>> GetUser(int id)
-    // {
-    //     var user = await userRepository.GetUserByIdAsync(id);
-
-    //     if (user == null)
-    //     {
-    //         return NotFound();
-    //     }
-
-    //     return mapper.Map<MemberDto>(user);
-    // }
 
     [HttpGet("{username}")]
     public async Task<ActionResult<MemberDto>> GetUser(string username)
