@@ -4,12 +4,13 @@ using API.Entities;
 using API.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
 
 namespace API.Services;
 
-public class TokenService(IConfiguration config) : ITokenService
+public class TokenService(IConfiguration config, UserManager<AppUser> userManager) : ITokenService
 {
-    public string CreateToken(AppUser user)
+    public async Task<string> CreateToken(AppUser user)
     {
         var tokenKey = config["TokenKey"] ?? throw new Exception("TokenKey not found in appsettings.json");
 
@@ -21,10 +22,19 @@ public class TokenService(IConfiguration config) : ITokenService
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey));
         Console.WriteLine(user.UserName);
 
+        if (user.UserName == null)
+        {
+            throw new Exception("User name is null");
+        }
+
         var claims = new List<Claim>{
          new Claim(JwtRegisteredClaimNames.NameId, user.Id.ToString()),
                   new Claim(ClaimTypes.Name, user.UserName),
         };
+
+        var roles = await userManager.GetRolesAsync(user);
+
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 

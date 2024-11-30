@@ -31,7 +31,6 @@ public class UsersController(IUserRepository userRepository, IMapper mapper, IPh
         return Ok(users);
     }
 
-
     [HttpGet("{username}")]
     public async Task<ActionResult<MemberDto>> GetUser(string username)
     {
@@ -77,6 +76,21 @@ public class UsersController(IUserRepository userRepository, IMapper mapper, IPh
         return BadRequest("Problem adding photo");
 
     }
+
+    // [HttpPut]
+    // public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto)
+    // {
+
+    //     var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
+
+    //     _mapper.Map(memberUpdateDto, user);
+
+    //     _unitOfWork.UserRepository.Update(user);
+
+    //     if (await _unitOfWork.Complete()) return NoContent();
+
+    //     return BadRequest("Failed to update user");
+    // }
 
     [HttpPut("set-main-photo/{photoId}")]
     public async Task<ActionResult> SetMainPhoto(int photoId)
