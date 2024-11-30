@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace API.Controllers;
 
@@ -72,6 +73,9 @@ public class LikesController : BaseApiController
     public async Task<ActionResult<IEnumerable<MemberDto>>> GetUserLikes([FromQuery] LikesParams likesParams)
     {
         likesParams.UserId = User.GetUserId();
+        Console.WriteLine("AAAAAA");
+        Console.WriteLine(JsonSerializer.Serialize(likesParams));
+        Console.WriteLine("AAAAAA");
 
         // Fetch user likes based on the predicate
         var users = await _likesRepository.GetUserLikes(likesParams);

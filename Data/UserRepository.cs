@@ -75,7 +75,7 @@ public class UserRepository(DataContext context, IMapper mapper) : IUserReposito
         return await context.SaveChangesAsync() > 0;
     }
 
-    public async void Update(AppUser user)
+    public void Update(AppUser user)
     {
         //Ez mi ? kerdes - entity framework trackeli a valtozasokat, ezert nem kell kulon update-et hivni
         context.Entry(user).State = EntityState.Modified;

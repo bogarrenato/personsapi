@@ -35,7 +35,17 @@ public class BuggyController : BaseApiController
     {
         var thing = _context.Users.Find(-1);
 
+        if (thing == null)
+        {
+            return StatusCode(500, "Computer says no!");
+        }
+
         var thingToReturn = thing.ToString();
+
+        if (thingToReturn == null)
+        {
+            return StatusCode(500, "Computer says no!");
+        }
 
         return thingToReturn;
     }

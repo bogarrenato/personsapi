@@ -23,9 +23,6 @@ public class UsersController(IUserRepository userRepository, IMapper mapper, IPh
     public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams)
     {
 
-        Console.WriteLine("aaa");
-        Console.WriteLine(JsonSerializer.Serialize(User.GetUsername()));
-        Console.WriteLine("aaa");
         userParams.CurrentUsername = User.GetUsername();
         var users = await userRepository.GetMembersAsync(userParams);
 

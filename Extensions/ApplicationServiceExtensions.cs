@@ -20,12 +20,13 @@ public static class ApplicationServiceExtensions
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPhotoService, PhotoService>();
+        services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<ILikesRepository, LikesRepository>();
-        // services.AddHttpContextAccessor();
+        services.AddHttpContextAccessor();
         services.AddScoped<LogUserActivity>();
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-        
+
         services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
 
         return services;
