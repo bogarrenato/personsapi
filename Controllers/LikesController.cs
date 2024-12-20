@@ -13,14 +13,9 @@ using System.Text.Json;
 
 namespace API.Controllers;
 
-public class LikesController : BaseApiController
+public class LikesController(IUnitOfWork unitOfWork) : BaseApiController
 {
-    private readonly ILikesRepository _likesRepository;
 
-    public LikesController(ILikesRepository likesRepository)
-    {
-        _likesRepository = likesRepository;
-    }
 
     [HttpPost("{targetUserId:int}")]
     public async Task<ActionResult> ToggleLike(int targetUserId)
@@ -33,7 +28,7 @@ public class LikesController : BaseApiController
         }
 
         // Check if the like already exists
-        var existingLike = await _likesRepository.GetUserLike(sourceUserId, targetUserId);
+        var existingLike = await unitOfWork.LikesRepository.GetUserLike(sourceUserId, targetUserId);
 
         if (existingLike == null)
         {
@@ -43,15 +38,15 @@ public class LikesController : BaseApiController
                 TargetUserId = targetUserId
             };
 
-            _likesRepository.AddLike(like);
+            unitOfWork.LikesRepository.AddLike(like);
         }
         else
         {
-            _likesRepository.DeleteLike(existingLike);
+            unitOfWork.LikesRepository.DeleteLike(existingLike);
         }
 
         // Save changes
-        if (await _likesRepository.SaveChanges())
+        if (await unitOfWork.Complete())
         {
             return Ok();
         }
@@ -65,7 +60,7 @@ public class LikesController : BaseApiController
         var sourceUserId = User.GetUserId();
 
         // Fetch the like IDs
-        var likeIds = await _likesRepository.GetCurrentUserLikeIds(sourceUserId);
+        var likeIds = await unitOfWork.LikesRepository.GetCurrentUserLikeIds(sourceUserId);
         return Ok(likeIds);
     }
 
@@ -73,12 +68,10 @@ public class LikesController : BaseApiController
     public async Task<ActionResult<IEnumerable<MemberDto>>> GetUserLikes([FromQuery] LikesParams likesParams)
     {
         likesParams.UserId = User.GetUserId();
-        Console.WriteLine("AAAAAA");
-        Console.WriteLine(JsonSerializer.Serialize(likesParams));
-        Console.WriteLine("AAAAAA");
+
 
         // Fetch user likes based on the predicate
-        var users = await _likesRepository.GetUserLikes(likesParams);
+        var users = await unitOfWork.LikesRepository.GetUserLikes(likesParams);
 
         Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
 

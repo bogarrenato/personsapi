@@ -21,9 +21,9 @@ public class LogUserActivity : IAsyncActionFilter
 
         var userId = resultContext.HttpContext.User.GetUserId();
 
-        var repo = resultContext.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
+        var unitOfWork = resultContext.HttpContext.RequestServices.GetRequiredService<IUnitOfWork>();
 
-        var user = await repo.GetUserByIdAsync(userId);
+        var user = await unitOfWork.UserRepository.GetUserByIdAsync(userId);
 
         if (user == null)
         {
@@ -34,6 +34,6 @@ public class LogUserActivity : IAsyncActionFilter
 
         Console.WriteLine(JsonSerializer.Serialize(user.LastActive.ToString()));
 
-        await repo.SaveAllAsync();
+        await unitOfWork.Complete();
     }
 }

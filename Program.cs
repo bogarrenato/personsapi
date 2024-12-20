@@ -3,6 +3,7 @@ using API.Data;
 using API.Entities;
 using API.Extensions;
 using API.Middleware;
+using API.SignalR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +20,7 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors(x => x
     .AllowAnyHeader()
     .AllowAnyMethod()
+    .AllowCredentials()
     .WithOrigins("http://localhost:4200", "https://localhost:4200"));
 
 app.UseAuthentication();
@@ -26,6 +28,8 @@ app.UseAuthorization();
 
 
 app.MapControllers();
+app.MapHub<PresenceHub>("hubs/presence");
+app.MapHub<MessageHub>("hubs/message");
 
 //Service locator - get a service to use outside of DI 
 using var scope = app.Services.CreateScope();
@@ -37,6 +41,7 @@ try
     var userManager = services.GetRequiredService<UserManager<AppUser>>();
     var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
     await context.Database.MigrateAsync();
+    await context.Database.ExecuteSqlRawAsync("DELETE FROM [Connections]");
     await Seed.SeedUsers(userManager, roleManager);
 }
 catch (Exception ex)
