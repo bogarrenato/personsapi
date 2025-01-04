@@ -10,6 +10,8 @@ using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
 
 namespace API.SignalR;
+
+
 public class MessageHub(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<PresenceHub> presenceHub) : Hub
 {
 
@@ -28,18 +30,18 @@ public class MessageHub(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<Pres
         await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
         var group = await AddToGroup(groupName);
 
-        await Clients.Group(groupName).SendAsync("UpdatedGroup", group);
-
+        // Üzenetek lekérése és olvasottá tétele
         var messages = await unitOfWork.MessageRepository.GetMessageThread(Context.User.GetUsername(), otherUser);
 
-        if (unitOfWork.HasChanges())
-        {
-            await unitOfWork.Complete();
-        }
+        // Mindenképp küldjük el az UpdatedGroup eseményt
+        await Clients.Group(groupName).SendAsync("UpdatedGroup", group);
 
+        // Majd mentsük a változásokat
+        await unitOfWork.Complete();
+
+        // Végül küldjük el az üzenetszálat
         await Clients.Caller.SendAsync("ReceiveMessageThread", messages);
     }
-
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
 
@@ -60,16 +62,19 @@ public class MessageHub(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<Pres
     {
         var username = Context.User?.GetUsername() ?? throw new Exception("could not get user");
         var group = await unitOfWork.MessageRepository.GetMessageGroup(groupName);
+        Console.WriteLine($"Adding user {username} to group {groupName}");
 
         var connection = new Connection { ConnectionId = Context.ConnectionId, Username = username };
 
         if (group == null)
         {
+            Console.WriteLine($"Creating new group {groupName}");
             group = new Group { Name = groupName };
             unitOfWork.MessageRepository.AddGroup(group);
         }
 
         group.Connections.Add(connection);
+        Console.WriteLine($"Group now has {group.Connections.Count} connections");
 
         if (await unitOfWork.Complete())
         {
@@ -124,6 +129,7 @@ public class MessageHub(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<Pres
 
         var groupName = GetGroupName(sender.UserName, recipient.UserName);
         var group = await unitOfWork.MessageRepository.GetMessageGroup(groupName);
+        // Console.WriteLine(groupName);
 
         if (group != null && group.Connections.Any(x => x.Username == recipient.UserName))
         {

@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers;
 
@@ -42,6 +43,7 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
             Gender = user.Gender
         };
     }
+    // Ezt hasznalom
 
 
     [HttpPost("login")]
@@ -50,6 +52,7 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
         var user = await userManager.Users
             .Include(p => p.Photos)
             .FirstOrDefaultAsync(x => x.NormalizedUserName == loginDto.Username.ToUpper());
+
 
         if (user == null || user.UserName == null)
         {
@@ -81,4 +84,25 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
     }
 
 
+
+    // [Authorize]
+    // [HttpGet("current")]
+    // public async Task<ActionResult<UserDto>> GetCurrentUser()
+    // {
+    //     var user = await userManager.Users
+    //         .Include(p => p.Photos)
+    //         .FirstOrDefaultAsync(x => x.NormalizedUserName == User.Identity.Name.ToUpper());
+
+    //     if (user == null)
+    //         return NotFound();
+
+    //     return new UserDto
+    //     {
+    //         Username = user.UserName,
+    //         Token = await tokenService.CreateToken(user),
+    //         PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
+    //         KnownAs = user.KnownAs,
+    //         Gender = user.Gender
+    //     };
+    // }
 }
